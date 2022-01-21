@@ -54,14 +54,16 @@ class PomodoroTimer:
         self.pomodoros = 0
         self.skipped = False
         self.stopped = False
-        
+        self.running = False
         
         
         self.root.mainloop()
 
     def start_timer_thread(self):
-        t = threading.Thread(target=self.start_timer)
-        t.start()
+        if not self.running:
+            t = threading.Thread(target=self.start_timer)
+            t.start()
+            self.running = True
         
     def start_timer(self):
         self.skipped = False
@@ -87,7 +89,7 @@ class PomodoroTimer:
                 self.start_timer()
                 
         elif timer_id == 2:
-            full_seconds = 60 +5
+            full_seconds = 60 * 5
             while full_seconds > 0 and not self.stopped:
                 minutes, seconds = divmod(full_seconds, 60)
                 self.short_break_timer_label.config(text=f"{minutes:02d}:{seconds:02d}")
@@ -109,12 +111,28 @@ class PomodoroTimer:
             if not self.stopped or self.skipped:
                 self.tabs.select(0)
                 self.start_timer()
+                
+        else:
+            print("Invalid timer ID")
             
     def reset_clock(self):
-        pass
-    
+        self.stopped = True
+        self.skipped = False
+        self.pomodoros = 0
+        self.pomodoro_timer_label.config(text="25:00")
+        self.short_break_timer_label.config(text="05:00")
+        self.long_break_timer_label.config(text="15:00")
+        self.pomodoro_counter_label.config(text="Pomodoros: 0")
+        self.running = False
+        
     def skip_clock(self):
-        pass
+        current_tab = self.tabs.index(self.tabs.select())
+        if current_tab == 0:
+            self.pomodoro_timer_label.config(text="25:00")
+        elif current_tab == 1:
+            self.short_break_timer_label.config(text="05:00")
+        elif current_tab == 2:    
+            self.long_break_timer_label.config(text="15:00")
     
 
 PomodoroTimer()
